@@ -1,0 +1,22 @@
+name: guts-wear
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: guts_wear
+      POSTGRES_PASSWORD: guts_wear
+      POSTGRES_DB: guts_wear
+    ports:
+      - "5432:5432"
+    volumes:
+      - guts_wear_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U guts_wear -d guts_wear"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  guts_wear_pgdata:
