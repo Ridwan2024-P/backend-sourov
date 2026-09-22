@@ -13,9 +13,17 @@ const newsletterRoutes = require("./routes/newsletter");
 
 const app = express();
 
-const corsOrigin = process.env.CORS_ORIGIN || "http://localhost:3000";
-app.use(cors({ origin: corsOrigin.split(",").map((o) => o.trim()) }));
-app.use(express.json({ limit: "5mb" })); // generous limit: admin product images can be data URLs
+const corsOrigin =
+  process.env.CORS_ORIGIN || "https://e-commerce-sourove-r4ep.vercel.app";
+
+app.use(
+  cors({
+    origin: corsOrigin.split(",").map((o) => o.trim()),
+    credentials: true,
+  })
+);
+
+app.use(express.json({ limit: "5mb" }));
 app.use(morgan("dev"));
 
 app.get("/api/health", async (_req, res) => {
@@ -23,7 +31,9 @@ app.get("/api/health", async (_req, res) => {
     await pool.query("SELECT 1");
     res.json({ ok: true, db: "connected" });
   } catch (err) {
-    res.status(503).json({ ok: false, db: "unreachable", error: err.message });
+    res
+      .status(503)
+      .json({ ok: false, db: "unreachable", error: err.message });
   }
 });
 
