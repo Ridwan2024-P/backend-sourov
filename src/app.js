@@ -13,13 +13,25 @@ const newsletterRoutes = require("./routes/newsletter");
 
 const app = express();
 
-const corsOrigin =
-  process.env.CORS_ORIGIN || "https://e-commerce-sourove-r4ep.vercel.app";
+// CORS
+const allowedOrigins = [
+  "https://e-commerce-sourove-r4ep.vercel.app",
+  "https://e-commerce-sourove-r4ep-git-main-alfa-p.vercel.app",
+  "https://e-commerce-sourove-r4ep-34w7l6dyo-alfa-p.vercel.app",
+];
 
 app.use(
   cors({
-    origin: corsOrigin.split(",").map((o) => o.trim()),
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -31,9 +43,11 @@ app.get("/api/health", async (_req, res) => {
     await pool.query("SELECT 1");
     res.json({ ok: true, db: "connected" });
   } catch (err) {
-    res
-      .status(503)
-      .json({ ok: false, db: "unreachable", error: err.message });
+    res.status(503).json({
+      ok: false,
+      db: "unreachable",
+      error: err.message,
+    });
   }
 });
 
@@ -46,13 +60,18 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 
 app.use((req, res) => {
-  res.status(404).json({ error: `No route for ${req.method} ${req.path}` });
+  res.status(404).json({
+    error: `No route for ${req.method} ${req.path}`,
+  });
 });
 
+// Error handler
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error(err);
-  res.status(500).json({ error: "Internal server error." });
+  res.status(500).json({
+    error: "Internal server error.",
+  });
 });
 
 module.exports = app;
